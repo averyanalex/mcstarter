@@ -1,0 +1,5 @@
+core:
+  url: https://avatars.githubusercontent.com/u/1455697?s=64&v=4
+plugins:
+  - name: rust-lang
+    url: https://doc.rust-lang.org/std/keyword.for.html

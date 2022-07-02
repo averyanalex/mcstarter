@@ -7,3 +7,11 @@ repository = "https://git.averyan.ru/firesquare/mcstarter"
 
 [dependencies]
 clap = { version = "3.2.8", features = ["derive"] }
+serde_yaml = "0.8.24"
+serde = { version = "1.0", features = ["derive"] }
+reqwest = { version = "0.11", features = ["json"] }
+bytes = "1"
+sha2 = "0.10.2"
+hex = "0.4.3"
+tokio = { version = "1", features = ["full"] }
+anyhow = "1.0"
