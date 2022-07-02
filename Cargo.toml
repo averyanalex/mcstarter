@@ -1,0 +1,9 @@
+[package]
+name = "mcstarter"
+version = "0.1.0"
+authors = ["Alexander Averyanov <alex@averyan.ru>"]
+edition = "2021"
+repository = "https://git.averyan.ru/firesquare/mcstarter"
+
+[dependencies]
+clap = { version = "3.2.8", features = ["derive"] }
