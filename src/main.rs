@@ -6,6 +6,7 @@ use hash::hash;
 use std::collections::HashMap;
 use std::env::set_current_dir;
 use std::fs::{self, create_dir_all};
+use std::include_str;
 use std::os::unix::process::CommandExt;
 use std::process::Command;
 
@@ -24,15 +25,17 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Updates mcstarter.lock
+    /// Generate mcstarter.yml in current directory
+    Init {},
+    /// Update mcstarter.lock
     Lock {},
-    /// Builds server
+    /// Build server
     Build {
         /// Target directory
         #[clap(default_value_t = String::from("./build"))]
         target: String,
     },
-    /// Launchs server
+    /// Launch server
     Launch {
         /// Target directory
         #[clap(default_value_t = String::from("./build"))]
@@ -45,6 +48,11 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match &cli.command {
+        Commands::Init {} => {
+            let default_config = include_str!("mcstarter.yml");
+            fs::write(format!("./mcstarter.yml"), &default_config)?;
+            println!("Initialized mcstarter.yml")
+        }
         Commands::Lock {} => {
             println!("Locking...");
             let config = config::load_config()?;
