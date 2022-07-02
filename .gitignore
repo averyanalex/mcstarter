@@ -1,3 +1,4 @@
 /target
-mcstarter.yml
-mcstarter.lock
+/mcstarter.yml
+/mcstarter.lock
+/build
