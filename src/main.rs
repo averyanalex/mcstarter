@@ -4,7 +4,10 @@ use download::download;
 use hash::hash;
 
 use std::collections::HashMap;
+use std::env::set_current_dir;
 use std::fs::{self, create_dir_all};
+use std::os::unix::process::CommandExt;
+use std::process::Command;
 
 mod config;
 mod download;
@@ -25,6 +28,12 @@ enum Commands {
     Lock {},
     /// Builds server
     Build {
+        /// Target directory
+        #[clap(default_value_t = String::from("./build"))]
+        target: String,
+    },
+    /// Launchs server
+    Launch {
         /// Target directory
         #[clap(default_value_t = String::from("./build"))]
         target: String,
@@ -71,6 +80,11 @@ async fn main() -> Result<()> {
                 fs::write(format!("{target}/core.jar"), &core)?;
             }
             create_dir_all(target)?;
+        }
+        Commands::Launch { target } => {
+            set_current_dir(target)?;
+            Command::new("java").args(["-jar", "core.jar"]).exec();
+            panic!("can't launch")
         }
     }
     Ok(())
