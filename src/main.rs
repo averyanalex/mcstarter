@@ -1,4 +1,5 @@
 use anyhow::Result;
+use build::build_plugins;
 use clap::{Parser, Subcommand};
 
 use std::collections::HashMap;
@@ -8,6 +9,7 @@ use std::include_str;
 use std::os::unix::process::CommandExt;
 use std::process::Command;
 
+mod build;
 mod config;
 mod download;
 mod hash;
@@ -87,16 +89,9 @@ async fn main() -> Result<()> {
 
             download::save_core(&config.core, core_hash, target).await?;
 
-            for plugin in config.plugins.iter() {
-                let plugin_hash = lock.get(&plugin.name);
-                let plugin_hash = match plugin_hash {
-                    Some(ph) => ph,
-                    None => todo!("invalid lock error"),
-                };
-
-                download::save_plugin(&plugin, plugin_hash, target).await?;
-            }
+            build_plugins(&config.plugins, &lock, &target).await?;
         }
+
         Commands::Launch { target } => {
             set_current_dir(target)?;
             Command::new("java").args(["-jar", "core.jar"]).exec();
