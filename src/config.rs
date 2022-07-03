@@ -2,12 +2,12 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::fs;
 
-use std::collections::LinkedList;
+use std::collections::HashSet;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Config {
     pub core: Core,
-    pub plugins: LinkedList<Plugin>,
+    pub plugins: HashSet<Plugin>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
@@ -15,7 +15,7 @@ pub struct Core {
     pub url: String,
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
 pub struct Plugin {
     pub name: String,
     pub version: String,

@@ -1,5 +1,4 @@
 use anyhow::Result;
-use build::build_plugins;
 use clap::{Parser, Subcommand};
 
 use std::collections::HashMap;
@@ -10,6 +9,7 @@ use std::os::unix::process::CommandExt;
 use std::process::Command;
 
 mod build;
+mod cache;
 mod config;
 mod download;
 mod hash;
@@ -29,11 +29,18 @@ enum Commands {
     Init {},
     /// Update mcstarter.lock
     Lock {},
+    /// Download files to cache
+    Download {
+        #[clap(default_value_t = String::from("./cache"))]
+        cache: String,
+    },
     /// Build server
     Build {
         /// Target directory
         #[clap(default_value_t = String::from("./build"))]
         target: String,
+        #[clap(default_value_t = String::from("./cache"))]
+        cache: String,
     },
     /// Launch server
     Launch {
@@ -50,7 +57,7 @@ async fn main() -> Result<()> {
     match &cli.command {
         Commands::Init {} => {
             let default_config = include_str!("mcstarter.yml");
-            fs::write(format!("./mcstarter.yml"), &default_config)?;
+            fs::write(format!("./mcstarter.yml"), default_config)?;
             println!("Initialized mcstarter.yml")
         }
 
@@ -71,25 +78,28 @@ async fn main() -> Result<()> {
                 lock.insert(plugin.name.clone(), plugin_hash);
             }
 
-            lock::save_lock(lock)?;
+            lock::save_lock(&lock)?;
             println!("Done!");
         }
 
-        Commands::Build { target } => {
+        Commands::Download { cache } => {
+            let config = config::load_config()?;
+            let lock = lock::load_lock()?;
+
+            create_dir_all(cache)?;
+
+            cache::cache_core(&config.core, &lock, cache).await?;
+            cache::cache_plugins(&config.plugins, &lock, cache).await?;
+        }
+
+        Commands::Build { target, cache } => {
             let config = config::load_config()?;
             let lock = lock::load_lock()?;
 
             create_dir_all(target)?;
 
-            let core_hash = lock.get(&String::from("core"));
-            let core_hash = match core_hash {
-                Some(ch) => ch,
-                None => todo!("invalid lock error"),
-            };
-
-            download::save_core(&config.core, core_hash, target).await?;
-
-            build_plugins(&config.plugins, &lock, &target).await?;
+            build::build_core(&lock, &target, &cache).await?;
+            build::build_plugins(&config.plugins, &lock, &target, &cache).await?;
         }
 
         Commands::Launch { target } => {

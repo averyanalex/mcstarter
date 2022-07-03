@@ -28,7 +28,7 @@ pub async fn download_plugin(plugin: &Plugin) -> Result<Bytes> {
     }
 }
 
-async fn download_hashed_plugin(plugin: &Plugin, expected_hash: &String) -> Result<Bytes> {
+pub async fn download_hashed_plugin(plugin: &Plugin, expected_hash: &String) -> Result<Bytes> {
     let plugin_bytes = download_plugin(plugin).await?;
     let plugin_hash = hash_bytes(&plugin_bytes);
 
@@ -39,7 +39,7 @@ async fn download_hashed_plugin(plugin: &Plugin, expected_hash: &String) -> Resu
     }
 }
 
-async fn download_hashed_core(core: &Core, expected_hash: &String) -> Result<Bytes> {
+pub async fn download_hashed_core(core: &Core, expected_hash: &String) -> Result<Bytes> {
     let core_bytes = download_core(core).await?;
     let core_hash = hash_bytes(&core_bytes);
 
