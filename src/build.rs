@@ -15,6 +15,8 @@ pub async fn build_plugins(
 ) -> Result<()> {
     let mut plugin_files: HashSet<String> = HashSet::new();
 
+    fs::create_dir_all(format!("{target}/plugins"))?;
+
     for plugin in plugins {
         let name_version = plugin.name_version();
 
