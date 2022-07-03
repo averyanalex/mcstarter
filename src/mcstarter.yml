@@ -1,6 +1,10 @@
+launch:
+  args:
+    - "-Xms64M"
+    - "-Xmx512M"
 core:
-  url: https://avatars.githubusercontent.com/u/1455697?s=64&v=4
+  url: "https://avatars.githubusercontent.com/u/1455697?s=64&v=4"
 plugins:
-  - name: rust-lang
-    version: 3
-    url: https://doc.rust-lang.org/std/keyword.for.html
+  - name: "rust-lang"
+    version: "3"
+    url: "https://doc.rust-lang.org/std/keyword.for.html"

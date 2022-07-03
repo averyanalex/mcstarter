@@ -1,5 +1,6 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
+use lock::get_lock_entry;
 
 use std::collections::HashMap;
 use std::env::set_current_dir;
@@ -103,8 +104,18 @@ async fn main() -> Result<()> {
         }
 
         Commands::Launch { target } => {
+            let config = config::load_config()?;
+            let lock = lock::load_lock()?;
+
+            let core_hash = get_lock_entry(&String::from("core"), &lock)?;
+
             set_current_dir(target)?;
-            Command::new("java").args(["-jar", "core.jar"]).exec();
+
+            let mut args = config.launch.args;
+            args.push_back(String::from("-jar"));
+            args.push_back(format!("core-{core_hash}.jar"));
+
+            Command::new("java").args(args).exec();
             panic!("can't launch")
         }
     }

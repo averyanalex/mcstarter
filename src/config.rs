@@ -2,12 +2,18 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::fs;
 
-use std::collections::HashSet;
+use std::collections::{HashSet, LinkedList};
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Config {
+    pub launch: Launch,
     pub core: Core,
     pub plugins: HashSet<Plugin>,
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub struct Launch {
+    pub args: LinkedList<String>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
