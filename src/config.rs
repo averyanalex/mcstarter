@@ -18,7 +18,16 @@ pub struct Core {
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Plugin {
     pub name: String,
-    pub url: String,
+    pub version: String,
+    pub url: Option<String>,
+}
+
+impl Plugin {
+    pub fn name_version(&self) -> String {
+        let name = self.name.clone();
+        let version = self.version.clone();
+        format!("{name}-{version}")
+    }
 }
 
 pub fn load_config() -> Result<Config> {

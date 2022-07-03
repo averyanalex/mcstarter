@@ -1,7 +1,5 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use download::download;
-use hash::hash;
 
 use std::collections::HashMap;
 use std::env::set_current_dir;
@@ -53,41 +51,51 @@ async fn main() -> Result<()> {
             fs::write(format!("./mcstarter.yml"), &default_config)?;
             println!("Initialized mcstarter.yml")
         }
+
         Commands::Lock {} => {
             println!("Locking...");
             let config = config::load_config()?;
 
-            let core = download(&config.core.url).await?;
-            let core_hash = hash(&core);
+            let core_bytes = download::download_core(&config.core).await?;
+            let core_hash = hash::hash_bytes(&core_bytes);
 
             let mut lock: HashMap<String, String> = HashMap::new();
 
             lock.insert(String::from("core"), core_hash);
 
             for plugin in config.plugins.iter() {
-                let plugin_bytes = download(&plugin.url).await?;
-                let plugin_hash = hash(&plugin_bytes);
+                let plugin_bytes = download::download_plugin(&plugin).await?;
+                let plugin_hash = hash::hash_bytes(&plugin_bytes);
                 lock.insert(plugin.name.clone(), plugin_hash);
             }
 
             lock::save_lock(lock)?;
             println!("Done!");
         }
+
         Commands::Build { target } => {
             let config = config::load_config()?;
             let lock = lock::load_lock()?;
-            let core = download(&config.core.url).await?;
-            let core_hash = hash(&core);
-            if &&core_hash
-                != lock
-                    .get(&String::from("core"))
-                    .get_or_insert(&String::from(""))
-            {
-                panic!("hash of core doen't match");
-            } else {
-                fs::write(format!("{target}/core.jar"), &core)?;
-            }
+
             create_dir_all(target)?;
+
+            let core_hash = lock.get(&String::from("core"));
+            let core_hash = match core_hash {
+                Some(ch) => ch,
+                None => todo!("invalid lock error"),
+            };
+
+            download::save_core(&config.core, core_hash, target).await?;
+
+            for plugin in config.plugins.iter() {
+                let plugin_hash = lock.get(&plugin.name);
+                let plugin_hash = match plugin_hash {
+                    Some(ph) => ph,
+                    None => todo!("invalid lock error"),
+                };
+
+                download::save_plugin(&plugin, plugin_hash, target).await?;
+            }
         }
         Commands::Launch { target } => {
             set_current_dir(target)?;
