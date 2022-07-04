@@ -6,6 +6,7 @@ use std::collections::{HashSet, LinkedList};
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Config {
+    pub include: Option<LinkedList<String>>,
     pub launch: Launch,
     pub core: Core,
     pub plugins: HashSet<Plugin>,

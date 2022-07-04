@@ -471,11 +471,13 @@ dependencies = [
  "bytes",
  "clap",
  "hex",
+ "linked-hash-map",
  "reqwest",
  "serde",
  "serde_yaml",
  "sha2",
  "tokio",
+ "yaml-rust",
 ]
 
 [[package]]

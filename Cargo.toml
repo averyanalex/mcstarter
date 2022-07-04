@@ -8,6 +8,8 @@ repository = "https://git.averyan.ru/firesquare/mcstarter"
 
 [dependencies]
 clap = { version = "3.2.8", features = ["derive"] }
+yaml-rust = "0.4.5"
+linked-hash-map = "0.5.6"
 serde_yaml = "0.8.24"
 serde = { version = "1.0", features = ["derive"] }
 reqwest = { version = "0.11", features = ["json"] }
