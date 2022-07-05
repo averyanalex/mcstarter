@@ -95,7 +95,6 @@ pub async fn build_files(includes: &Option<LinkedList<String>>, target: &String)
     let mut ignore_dirs: HashSet<String> = HashSet::new();
 
     ignore_dirs.insert(target.clone());
-    ignore_dirs.insert(String::from("./.git"));
 
     match includes {
         Some(incl) => {
@@ -175,6 +174,11 @@ fn scan_dir(
         let file = file?;
         let path = file.path();
 
+        let file_name = path.file_name().unwrap();
+        if file_name == "mcstarter.yml" || file_name == "mcstarter.lock" || file_name == ".git" {
+            continue;
+        }
+
         if path.is_file() {
             let extension = path.extension();
             let file_path_stripped =
@@ -253,7 +257,7 @@ fn handle_yml_config(
 
         match current_config {
             Some(current_config) => {
-                let new_config = merge_yamls(current_config, parsed)?;
+                let new_config = merge_yamls(current_config, parsed);
                 yml_configs.insert(name.clone(), new_config);
             }
             None => {

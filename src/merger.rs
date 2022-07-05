@@ -2,19 +2,17 @@ use linked_hash_map::Entry;
 use yaml_rust::yaml::Hash;
 use yaml_rust::yaml::Yaml;
 
-use anyhow::{anyhow, Result};
-
 // Merge two YAMLs
-pub fn merge_yamls(a: &Yaml, b: &Yaml) -> Result<Yaml> {
+pub fn merge_yamls(a: &Yaml, b: &Yaml) -> Yaml {
     if let Yaml::Hash(a_hash) = a {
         if let Yaml::Hash(b_hash) = b {
             let c = merge_hashes(a_hash, b_hash);
-            Ok(Yaml::Hash(c))
+            Yaml::Hash(c)
         } else {
-            Err(anyhow!("can't get yaml's hash"))
+            b.clone()
         }
     } else {
-        Err(anyhow!("can't get yaml's hash"))
+        b.clone()
     }
 }
 

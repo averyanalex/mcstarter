@@ -1,9 +1,11 @@
 include:
-# - "./defaults"
+ - "./common"
 launch:
-  args:
-    - "-Xms64M"
-    - "-Xmx512M"
+  java_args:
+    - "-Xms512M"
+    - "-Xmx${MEMORY}"
+  mc_args:
+    - "nogui"
 core:
   url: "https://avatars.githubusercontent.com/u/1455697?s=64&v=4"
 plugins:

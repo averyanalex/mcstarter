@@ -1,6 +1,6 @@
 [package]
 name = "mcstarter"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Alexander Averyanov <alex@averyan.ru>"]
 edition = "2021"
 readme = "README.md"

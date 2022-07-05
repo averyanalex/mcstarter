@@ -66,7 +66,7 @@ async fn main() -> Result<()> {
 
         Commands::Lock {} => {
             println!("Locking...");
-            let config = config::load_config()?;
+            let config = config::load_config(false)?;
 
             let core_bytes = download::download_core(&config.core).await?;
             let core_hash = hash::hash_bytes(&core_bytes);
@@ -86,7 +86,7 @@ async fn main() -> Result<()> {
         }
 
         Commands::Download { cache } => {
-            let config = config::load_config()?;
+            let config = config::load_config(false)?;
             let lock = lock::load_lock()?;
 
             create_dir_all(cache)?;
@@ -96,7 +96,7 @@ async fn main() -> Result<()> {
         }
 
         Commands::Build { target, cache } => {
-            let config = config::load_config()?;
+            let config = config::load_config(true)?;
             let lock = lock::load_lock()?;
 
             create_dir_all(target)?;
@@ -107,16 +107,26 @@ async fn main() -> Result<()> {
         }
 
         Commands::Launch { target } => {
-            let config = config::load_config()?;
+            let config = config::load_config(true)?;
             let lock = lock::load_lock()?;
 
             let core_hash = get_lock_entry(&String::from("core"), &lock)?;
 
             set_current_dir(target)?;
 
-            let mut args = config.launch.args;
+            let mut args = config.launch.java_args;
             args.push_back(String::from("-jar"));
             args.push_back(format!("core-{core_hash}.jar"));
+
+            let mut mc_args = config.launch.mc_args;
+            args.append(&mut mc_args);
+
+            print!("Running java");
+            for arg in &args {
+                print!(" {}", arg);
+            }
+
+            println!();
 
             Command::new("java").args(args).exec();
             panic!("can't launch")
