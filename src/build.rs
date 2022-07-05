@@ -90,8 +90,11 @@ pub async fn build_core(
     Ok(())
 }
 
-pub async fn build_configs(includes: &Option<LinkedList<String>>, target: &String) -> Result<()> {
-    let mut configs: HashMap<String, Yaml> = HashMap::new();
+pub async fn build_files(includes: &Option<LinkedList<String>>, target: &String) -> Result<()> {
+    let mut yml_configs: HashMap<String, Yaml> = HashMap::new();
+    let mut etc_configs: HashMap<String, String> = HashMap::new();
+    let mut etc_files: HashMap<String, String> = HashMap::new();
+
     let mut ignore_dirs: HashSet<String> = HashSet::new();
 
     ignore_dirs.insert(target.clone());
@@ -99,21 +102,30 @@ pub async fn build_configs(includes: &Option<LinkedList<String>>, target: &Strin
     match includes {
         Some(incl) => {
             for include in incl {
-                scan_configs_dir(Path::new(include), &mut configs, include, &ignore_dirs)?;
+                scan_dir(
+                    Path::new(include),
+                    &mut yml_configs,
+                    &mut etc_configs,
+                    &mut etc_files,
+                    include,
+                    &ignore_dirs,
+                )?;
                 ignore_dirs.insert(include.clone());
             }
         }
         None => {}
     }
 
-    scan_configs_dir(
+    scan_dir(
         Path::new("./"),
-        &mut configs,
+        &mut yml_configs,
+        &mut etc_configs,
+        &mut etc_files,
         &String::from("./"),
         &ignore_dirs,
     )?;
 
-    for (key, value) in configs {
+    for (key, value) in yml_configs {
         let path_str = format!("{target}/{key}");
         let path = Path::new(&path_str);
 
@@ -124,12 +136,35 @@ pub async fn build_configs(includes: &Option<LinkedList<String>>, target: &Strin
         fs::create_dir_all(path.parent().unwrap())?;
         fs::write(path, env::pass_envs(&out_str))?;
     }
+
+    for (key, value) in etc_configs {
+        let out_path_str = format!("{target}/{key}");
+        let out_path = Path::new(&out_path_str);
+        let in_path = Path::new(&value);
+
+        let data = fs::read_to_string(&in_path)?;
+
+        fs::create_dir_all(out_path.parent().unwrap())?;
+        fs::write(out_path, env::pass_envs(&data))?;
+    }
+
+    for (key, value) in etc_files {
+        let out_path_str = format!("{target}/{key}");
+        let out_path = Path::new(&out_path_str);
+        let in_path = Path::new(&value);
+
+        fs::create_dir_all(out_path.parent().unwrap())?;
+
+        fs::copy(&in_path, &out_path)?;
+    }
     Ok(())
 }
 
-fn scan_configs_dir(
+fn scan_dir(
     dir: &Path,
-    configs: &mut HashMap<String, Yaml>,
+    yml_configs: &mut HashMap<String, Yaml>,
+    etc_configs: &mut HashMap<String, String>,
+    etc_files: &mut HashMap<String, String>,
     strip_prefix: &String,
     ignore_dirs: &HashSet<String>,
 ) -> Result<()> {
@@ -144,39 +179,75 @@ fn scan_configs_dir(
 
         if path.is_file() {
             let extension = path.extension();
+            let file_path_stripped =
+                String::from(path.strip_prefix(strip_prefix)?.to_str().unwrap());
             match extension {
                 Some(ext) => {
-                    if ext == "yml" {
-                        let file_data = fs::read_to_string(&path)?;
-                        let file_path_stripped =
-                            String::from(path.strip_prefix(strip_prefix)?.to_str().unwrap());
-                        handle_config(configs, file_path_stripped, file_data)?;
+                    if ext == "yml" || ext == "yaml" {
+                        handle_yml_config(yml_configs, &file_path_stripped, &path)?;
+                    } else if ext == "properties"
+                        || ext == "conf"
+                        || ext == "txt"
+                        || ext == "json"
+                        || ext == "toml"
+                    {
+                        handle_etc_config(etc_configs, &file_path_stripped, &path)?;
+                    } else {
+                        handle_etc_file(etc_files, &file_path_stripped, &path)?;
                     }
                 }
-                None => {}
+                None => {
+                    handle_etc_file(etc_files, &file_path_stripped, &path)?;
+                }
             }
         } else if path.is_dir() {
-            scan_configs_dir(&path, configs, strip_prefix, &ignore_dirs)?;
+            scan_dir(
+                &path,
+                yml_configs,
+                etc_configs,
+                etc_files,
+                strip_prefix,
+                &ignore_dirs,
+            )?;
         }
     }
 
     Ok(())
 }
 
-fn handle_config(
-    configs: &mut HashMap<String, Yaml>,
-    config_name: String,
-    config_data: String,
+fn handle_etc_config(
+    etc_configs: &mut HashMap<String, String>,
+    name: &String,
+    file: &Path,
 ) -> Result<()> {
-    let parsed = YamlLoader::load_from_str(&config_data)?;
+    etc_configs.insert(name.clone(), String::from(file.to_str().unwrap()));
+    Ok(())
+}
+
+fn handle_etc_file(
+    etc_files: &mut HashMap<String, String>,
+    name: &String,
+    file: &Path,
+) -> Result<()> {
+    etc_files.insert(name.clone(), String::from(file.to_str().unwrap()));
+    Ok(())
+}
+
+fn handle_yml_config(
+    yml_configs: &mut HashMap<String, Yaml>,
+    name: &String,
+    path: &Path,
+) -> Result<()> {
+    let data = fs::read_to_string(&path)?;
+    let parsed = YamlLoader::load_from_str(&data)?;
     let parsed = &parsed[0];
 
-    if configs.contains_key(&config_name) {
-        let current_config = configs.get(&config_name).unwrap();
+    if yml_configs.contains_key(name) {
+        let current_config = yml_configs.get(name).unwrap();
         let new_config = merge_yamls(current_config, parsed);
-        configs.insert(config_name, new_config);
+        yml_configs.insert(name.clone(), new_config);
     } else {
-        configs.insert(config_name, parsed.clone());
+        yml_configs.insert(name.clone(), parsed.clone());
     };
 
     Ok(())

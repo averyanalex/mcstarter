@@ -102,7 +102,7 @@ async fn main() -> Result<()> {
 
             build::build_core(&lock, &target, &cache).await?;
             build::build_plugins(&config.plugins, &lock, &target, &cache).await?;
-            build::build_configs(&config.include, &target).await?;
+            build::build_files(&config.include, &target).await?;
         }
 
         Commands::Launch { target } => {
