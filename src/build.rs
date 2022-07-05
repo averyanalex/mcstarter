@@ -241,22 +241,26 @@ fn handle_yml_config(
 ) -> Result<()> {
     let data = fs::read_to_string(&path)?;
     let parsed = YamlLoader::load_from_str(&data)?;
+
     if parsed.len() == 0 {
-        todo!("wtf 0 len yaml {}", name);
+        if !yml_configs.contains_key(name) {
+            yml_configs.insert(name.clone(), Yaml::Null);
+        }
+        Ok(())
     } else if parsed.len() > 1 {
         todo!("wtf 1+ len yaml {}", name);
-    }
-    let parsed = &parsed[0];
-
-    if yml_configs.contains_key(name) {
-        let current_config = yml_configs.get(name).unwrap();
-        let new_config = merge_yamls(current_config, parsed);
-        yml_configs.insert(name.clone(), new_config);
     } else {
-        yml_configs.insert(name.clone(), parsed.clone());
-    };
+        let parsed = &parsed[0];
 
-    Ok(())
+        if yml_configs.contains_key(name) {
+            let current_config = yml_configs.get(name).unwrap();
+            let new_config = merge_yamls(current_config, parsed);
+            yml_configs.insert(name.clone(), new_config);
+        } else {
+            yml_configs.insert(name.clone(), parsed.clone());
+        }
+        Ok(())
+    }
 }
 
 // Merge two YAMLs
