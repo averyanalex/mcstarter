@@ -135,7 +135,7 @@ pub async fn build_files(includes: &Option<LinkedList<String>>, target: &String)
         emitter.dump(&value)?;
 
         fs::create_dir_all(path.parent().unwrap())?;
-        fs::write(path, env::pass_envs(&out_str))?;
+        fs::write(path, env::pass_envs(&out_str)?)?;
     }
 
     for (key, value) in etc_configs {
@@ -146,7 +146,7 @@ pub async fn build_files(includes: &Option<LinkedList<String>>, target: &String)
         let data = fs::read_to_string(&in_path)?;
 
         fs::create_dir_all(out_path.parent().unwrap())?;
-        fs::write(out_path, env::pass_envs(&data))?;
+        fs::write(out_path, env::pass_envs(&data)?)?;
     }
 
     for (key, value) in etc_files {
