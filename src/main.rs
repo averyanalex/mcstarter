@@ -13,6 +13,7 @@ mod build;
 mod cache;
 mod config;
 mod download;
+mod env;
 mod hash;
 mod lock;
 

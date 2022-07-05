@@ -10,6 +10,7 @@ use std::fs;
 use std::path::Path;
 
 use crate::config::Plugin;
+use crate::env;
 use crate::lock::get_lock_entry;
 
 pub async fn build_plugins(
@@ -121,7 +122,7 @@ pub async fn build_configs(includes: &Option<LinkedList<String>>, target: &Strin
         emitter.dump(&value)?;
 
         fs::create_dir_all(path.parent().unwrap())?;
-        fs::write(path, out_str)?;
+        fs::write(path, env::pass_envs(&out_str))?;
     }
     Ok(())
 }
