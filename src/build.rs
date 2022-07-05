@@ -241,6 +241,11 @@ fn handle_yml_config(
 ) -> Result<()> {
     let data = fs::read_to_string(&path)?;
     let parsed = YamlLoader::load_from_str(&data)?;
+    if parsed.len() == 0 {
+        todo!("wtf 0 len yaml {}", name);
+    } else if parsed.len() > 1 {
+        todo!("wtf 1+ len yaml {}", name);
+    }
     let parsed = &parsed[0];
 
     if yml_configs.contains_key(name) {
