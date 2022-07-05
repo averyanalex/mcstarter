@@ -3,7 +3,7 @@ use linked_hash_map::Entry;
 use yaml_rust::yaml::Hash;
 use yaml_rust::{Yaml, YamlEmitter, YamlLoader};
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 
 use std::collections::{HashMap, HashSet, LinkedList};
 use std::fs;
@@ -248,32 +248,36 @@ fn handle_yml_config(
         }
         Ok(())
     } else if parsed.len() > 1 {
-        todo!("wtf 1+ len yaml {}", name);
+        Err(anyhow!("yaml {} has more than 1 docs", name))
     } else {
         let parsed = &parsed[0];
 
-        if yml_configs.contains_key(name) {
-            let current_config = yml_configs.get(name).unwrap();
-            let new_config = merge_yamls(current_config, parsed);
-            yml_configs.insert(name.clone(), new_config);
-        } else {
-            yml_configs.insert(name.clone(), parsed.clone());
+        let current_config = yml_configs.get(name);
+
+        match current_config {
+            Some(current_config) => {
+                let new_config = merge_yamls(current_config, parsed)?;
+                yml_configs.insert(name.clone(), new_config);
+            }
+            None => {
+                yml_configs.insert(name.clone(), parsed.clone());
+            }
         }
         Ok(())
     }
 }
 
 // Merge two YAMLs
-fn merge_yamls(a: &Yaml, b: &Yaml) -> Yaml {
+fn merge_yamls(a: &Yaml, b: &Yaml) -> Result<Yaml> {
     if let Yaml::Hash(a_hash) = a {
         if let Yaml::Hash(b_hash) = b {
             let c = merge_hashes(a_hash, b_hash);
-            Yaml::Hash(c)
+            Ok(Yaml::Hash(c))
         } else {
-            todo!("error");
+            Err(anyhow!("can't get yaml's hash"))
         }
     } else {
-        todo!("error");
+        Err(anyhow!("can't get yaml's hash"))
     }
 }
 

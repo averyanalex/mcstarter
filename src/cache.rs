@@ -48,7 +48,7 @@ async fn cache_plugin(
     let path = Path::new(&path_str);
 
     if !path.exists() {
-        let plugin_bytes = download_hashed_plugin(plugin, &hash).await?;
+        let plugin_bytes = download_hashed_plugin(name, plugin, &hash).await?;
         fs::write(path, plugin_bytes)?;
     }
     Ok(())

@@ -1,4 +1,5 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
+
 use std::fs;
 
 use std::collections::HashMap;
@@ -19,6 +20,6 @@ pub fn get_lock_entry(name: &String, lock: &HashMap<String, String>) -> Result<S
     let hash = lock.get(name);
     match hash {
         Some(h) => Ok(h.clone()),
-        None => todo!("no such entry in lock file"),
+        None => Err(anyhow!("no entry {name} in lock")),
     }
 }

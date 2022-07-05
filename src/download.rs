@@ -1,6 +1,7 @@
 extern crate reqwest;
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
+
 use bytes::Bytes;
 
 use crate::config::{Core, Plugin};
@@ -26,14 +27,18 @@ pub async fn download_plugin(plugin: &Plugin) -> Result<Bytes> {
     }
 }
 
-pub async fn download_hashed_plugin(plugin: &Plugin, expected_hash: &String) -> Result<Bytes> {
+pub async fn download_hashed_plugin(
+    name: &String,
+    plugin: &Plugin,
+    expected_hash: &String,
+) -> Result<Bytes> {
     let plugin_bytes = download_plugin(plugin).await?;
     let plugin_hash = hash_bytes(&plugin_bytes);
 
     if &plugin_hash == expected_hash {
         Ok(plugin_bytes)
     } else {
-        todo!("return error plugin hash invalid")
+        Err(anyhow!("plugin {name} has invalid hash"))
     }
 }
 
@@ -44,6 +49,6 @@ pub async fn download_hashed_core(core: &Core, expected_hash: &String) -> Result
     if &core_hash == expected_hash {
         Ok(core_bytes)
     } else {
-        todo!("return error core hash invalid")
+        Err(anyhow!("core has invalid hash"))
     }
 }
