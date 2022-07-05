@@ -2,14 +2,14 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::fs;
 
-use std::collections::{HashSet, LinkedList};
+use std::collections::{HashMap, LinkedList};
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Config {
     pub include: Option<LinkedList<String>>,
     pub launch: Launch,
     pub core: Core,
-    pub plugins: HashSet<Plugin>,
+    pub plugins: HashMap<String, Plugin>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
@@ -24,17 +24,8 @@ pub struct Core {
 
 #[derive(Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
 pub struct Plugin {
-    pub name: String,
     pub version: String,
     pub url: Option<String>,
-}
-
-impl Plugin {
-    pub fn name_version(&self) -> String {
-        let name = self.name.clone();
-        let version = self.version.clone();
-        format!("{name}-{version}")
-    }
 }
 
 pub fn load_config() -> Result<Config> {

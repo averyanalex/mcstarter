@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
@@ -26,22 +26,23 @@ pub async fn cache_core(
 }
 
 pub async fn cache_plugins(
-    plugins: &HashSet<Plugin>,
+    plugins: &HashMap<String, Plugin>,
     lock: &HashMap<String, String>,
     cache_dir: &String,
 ) -> Result<()> {
-    for plugin in plugins.iter() {
-        cache_plugin(plugin, lock, cache_dir).await?;
+    for (name, plugin) in plugins {
+        cache_plugin(name, plugin, lock, cache_dir).await?;
     }
     Ok(())
 }
 
 async fn cache_plugin(
+    name: &String,
     plugin: &Plugin,
     lock: &HashMap<String, String>,
     cache_dir: &String,
 ) -> Result<()> {
-    let hash = get_lock_entry(&plugin.name, &lock)?;
+    let hash = get_lock_entry(name, &lock)?;
 
     let path_str = format!("{cache_dir}/{hash}");
     let path = Path::new(&path_str);

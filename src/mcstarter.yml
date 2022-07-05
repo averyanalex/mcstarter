@@ -1,5 +1,5 @@
 include:
-# - ./defaults
+# - "./defaults"
 launch:
   args:
     - "-Xms64M"
@@ -7,6 +7,6 @@ launch:
 core:
   url: "https://avatars.githubusercontent.com/u/1455697?s=64&v=4"
 plugins:
-  - name: "rust-lang"
+  rust-lang:
     version: "3"
     url: "https://doc.rust-lang.org/std/keyword.for.html"

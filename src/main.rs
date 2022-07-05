@@ -74,10 +74,10 @@ async fn main() -> Result<()> {
 
             lock.insert(String::from("core"), core_hash);
 
-            for plugin in config.plugins.iter() {
+            for (name, plugin) in config.plugins {
                 let plugin_bytes = download::download_plugin(&plugin).await?;
                 let plugin_hash = hash::hash_bytes(&plugin_bytes);
-                lock.insert(plugin.name.clone(), plugin_hash);
+                lock.insert(name, plugin_hash);
             }
 
             lock::save_lock(&lock)?;

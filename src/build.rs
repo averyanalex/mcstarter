@@ -14,7 +14,7 @@ use crate::env;
 use crate::lock::get_lock_entry;
 
 pub async fn build_plugins(
-    plugins: &HashSet<Plugin>,
+    plugins: &HashMap<String, Plugin>,
     lock: &HashMap<String, String>,
     target: &String,
     cache: &String,
@@ -23,10 +23,10 @@ pub async fn build_plugins(
 
     fs::create_dir_all(format!("{target}/plugins"))?;
 
-    for plugin in plugins {
-        let name_version = plugin.name_version();
+    for (name, plugin) in plugins {
+        let name_version = format!("{name}-{}", plugin.version);
 
-        let hash = get_lock_entry(&plugin.name, &lock)?;
+        let hash = get_lock_entry(name, &lock)?;
 
         let plugin_filename = format!("{name_version}-{hash}.jar");
         let target_path_str = format!("{target}/plugins/{plugin_filename}");
