@@ -16,6 +16,7 @@ mod download;
 mod env;
 mod hash;
 mod lock;
+mod merger;
 
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
