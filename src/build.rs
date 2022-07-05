@@ -98,6 +98,7 @@ pub async fn build_files(includes: &Option<LinkedList<String>>, target: &String)
     let mut ignore_dirs: HashSet<String> = HashSet::new();
 
     ignore_dirs.insert(target.clone());
+    ignore_dirs.insert(String::from("./.git"));
 
     match includes {
         Some(incl) => {
