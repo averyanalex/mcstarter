@@ -4,12 +4,13 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
-use crate::config::{Core, Plugin};
+use crate::config::{Config, Core, Plugin};
 use crate::download::{download_hashed_core, download_hashed_plugin};
 use crate::lock::get_lock_entry;
 
 pub async fn cache_core(
     core: &Core,
+    config: &Config,
     lock: &HashMap<String, String>,
     cache_dir: &String,
 ) -> Result<()> {
@@ -19,7 +20,7 @@ pub async fn cache_core(
     let path = Path::new(&path_str);
 
     if !path.exists() {
-        let core_bytes = download_hashed_core(core, &hash).await?;
+        let core_bytes = download_hashed_core(core, config, &hash).await?;
         fs::write(&path, core_bytes)?;
     }
     Ok(())
@@ -27,11 +28,12 @@ pub async fn cache_core(
 
 pub async fn cache_plugins(
     plugins: &HashMap<String, Plugin>,
+    config: &Config,
     lock: &HashMap<String, String>,
     cache_dir: &String,
 ) -> Result<()> {
     for (name, plugin) in plugins {
-        cache_plugin(name, plugin, lock, cache_dir).await?;
+        cache_plugin(name, plugin, config, lock, cache_dir).await?;
     }
     Ok(())
 }
@@ -39,6 +41,7 @@ pub async fn cache_plugins(
 async fn cache_plugin(
     name: &String,
     plugin: &Plugin,
+    config: &Config,
     lock: &HashMap<String, String>,
     cache_dir: &String,
 ) -> Result<()> {
@@ -48,7 +51,7 @@ async fn cache_plugin(
     let path = Path::new(&path_str);
 
     if !path.exists() {
-        let plugin_bytes = download_hashed_plugin(name, plugin, &hash).await?;
+        let plugin_bytes = download_hashed_plugin(name, plugin, config, &hash).await?;
         fs::write(path, plugin_bytes)?;
     }
     Ok(())

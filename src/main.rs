@@ -68,17 +68,17 @@ async fn main() -> Result<()> {
             println!("Locking...");
             let config = config::load_config(false)?;
 
-            let core_bytes = download::download_core(&config.core).await?;
+            let core_bytes = download::download_core(&config.core, &config).await?;
             let core_hash = hash::hash_bytes(&core_bytes);
 
             let mut lock: HashMap<String, String> = HashMap::new();
 
             lock.insert(String::from("core"), core_hash);
 
-            for (name, plugin) in config.plugins {
-                let plugin_bytes = download::download_plugin(&plugin).await?;
+            for (name, plugin) in &config.plugins {
+                let plugin_bytes = download::download_plugin(name, &plugin, &config).await?;
                 let plugin_hash = hash::hash_bytes(&plugin_bytes);
-                lock.insert(name, plugin_hash);
+                lock.insert(name.clone(), plugin_hash);
             }
 
             lock::save_lock(&lock)?;
@@ -91,8 +91,8 @@ async fn main() -> Result<()> {
 
             create_dir_all(cache)?;
 
-            cache::cache_core(&config.core, &lock, cache).await?;
-            cache::cache_plugins(&config.plugins, &lock, cache).await?;
+            cache::cache_core(&config.core, &config, &lock, cache).await?;
+            cache::cache_plugins(&config.plugins, &config, &lock, cache).await?;
         }
 
         Commands::Build { target, cache } => {

@@ -1,14 +1,24 @@
 include:
- - "./common"
+  - "./common"
+
+sources:
+  trashcan:
+    url: "https://git.averyan.ru/mirrors/minecraft/plugins/trashcan/-/raw/main/trash/$NAME-$VERSION.jar"
+
+default_source: trashcan
+
+core:
+  name: "paper"
+  version: "1.19-34"
+  url: "https://api.papermc.io/v2/projects/paper/versions/1.19/builds/34/downloads/paper-1.19-34.jar"
+
+plugins:
+  LuckPerms:
+    version: "Bukkit-5.4.15"
+
 launch:
   java_args:
     - "-Xms512M"
     - "-Xmx${MEMORY}"
   mc_args:
     - "nogui"
-core:
-  url: "https://avatars.githubusercontent.com/u/1455697?s=64&v=4"
-plugins:
-  rust-lang:
-    version: "3"
-    url: "https://doc.rust-lang.org/std/keyword.for.html"

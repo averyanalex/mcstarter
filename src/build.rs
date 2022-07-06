@@ -87,7 +87,7 @@ pub async fn build_core(
     Ok(())
 }
 
-pub async fn build_files(includes: &Option<LinkedList<String>>, target: &String) -> Result<()> {
+pub async fn build_files(includes: &LinkedList<String>, target: &String) -> Result<()> {
     let mut yml_configs: HashMap<String, Yaml> = HashMap::new();
     let mut etc_configs: HashMap<String, String> = HashMap::new();
     let mut etc_files: HashMap<String, String> = HashMap::new();
@@ -96,22 +96,18 @@ pub async fn build_files(includes: &Option<LinkedList<String>>, target: &String)
 
     ignore_dirs.insert(target.clone());
 
-    match includes {
-        Some(incl) => {
-            for include in incl {
-                scan_dir(
-                    Path::new(include),
-                    &mut yml_configs,
-                    &mut etc_configs,
-                    &mut etc_files,
-                    include,
-                    &ignore_dirs,
-                )?;
-                ignore_dirs.insert(include.clone());
-            }
-        }
-        None => {}
+    for include in includes {
+        scan_dir(
+            Path::new(include),
+            &mut yml_configs,
+            &mut etc_configs,
+            &mut etc_files,
+            include,
+            &ignore_dirs,
+        )?;
+        ignore_dirs.insert(include.clone());
     }
+
 
     scan_dir(
         Path::new("./"),
