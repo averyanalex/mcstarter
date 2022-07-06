@@ -57,7 +57,7 @@ fn default_java_args() -> LinkedList<String> {
 }
 
 fn default_mc_args() -> LinkedList<String> {
-    let mut mc_args: LinkedList<String> = LinkedList::new();
+    let mc_args: LinkedList<String> = LinkedList::new();
     mc_args
 }
 
