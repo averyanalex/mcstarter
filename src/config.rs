@@ -98,12 +98,11 @@ pub fn load_config(pass_env: bool) -> Result<Config> {
     let main_config_file = fs::read_to_string("./mcstarter.yml")?;
     let includes_config: IncludesConfig = serde_yaml::from_str(&main_config_file)?;
 
-    match includes_config.include {
-        Some(includes) => {
-            // TODO: refactor this cringe
-            let main_cfg = fs::read_to_string("./mcstarter.yml")?;
-            let parsed_main_cfg = &YamlLoader::load_from_str(&main_cfg)?[0];
+    let mut parsed_main_cfg_list = YamlLoader::load_from_str(&main_config_file)?;
+    let parsed_main_cfg = parsed_main_cfg_list.pop().unwrap();
 
+    let cfg = match includes_config.include {
+        Some(includes) => {
             let mut yaml_config = Yaml::Null;
 
             for include in includes {
@@ -115,23 +114,20 @@ pub fn load_config(pass_env: bool) -> Result<Config> {
                 }
             }
 
-            yaml_config = merger::merge_yamls(&yaml_config, parsed_main_cfg);
-
-            let mut config_str = String::new();
-            let mut emitter = YamlEmitter::new(&mut config_str);
-            emitter.dump(&yaml_config)?;
-
-            let config: Config = if pass_env {
-                serde_yaml::from_str(&env::pass_envs(&config_str)?)?
-            } else {
-                serde_yaml::from_str(&config_str)?
-            };
-
-            Ok(config)
+            merger::merge_yamls(&yaml_config, &parsed_main_cfg)
         }
-        None => {
-            let config: Config = serde_yaml::from_str(&main_config_file)?;
-            Ok(config)
-        }
-    }
+        None => parsed_main_cfg,
+    };
+
+    let mut config_str = String::new();
+    let mut emitter = YamlEmitter::new(&mut config_str);
+    emitter.dump(&cfg)?;
+
+    let config: Config = if pass_env {
+        serde_yaml::from_str(&env::pass_envs(&config_str)?)?
+    } else {
+        serde_yaml::from_str(&config_str)?
+    };
+
+    Ok(config)
 }
