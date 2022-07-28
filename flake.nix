@@ -29,7 +29,7 @@
         };
       in
       {
-        defaultPackage = mcstarter;
+        packages.default = mcstarter;
 
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
