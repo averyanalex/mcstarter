@@ -3,3 +3,5 @@
 /mcstarter.lock
 /build
 /cache
+.direnv
+/result
